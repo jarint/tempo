@@ -1,50 +1,50 @@
 newFrame <- function(){
   ######################################################################################
   #randomization
-  fileSelector = tk_messageBox(type = "okcancel", message = "Choose your Randomization CSV file (Plate 1).", 
+  fileSelector = tk_messageBox(type = "okcancel", message = "Choose your Randomization CSV file (Plate 1).",
                                caption = "Enter Randomization CSV")
   if (fileSelector == "ok"){
     rdm <- file.choose()
     outPath <<- dirname(rdm)
     rdm <- read.csv(rdm, header = T)
   } else {
-    tk_messageBox(type = 'ok', message = "You must choose a randomization file (plate 1 in DFExplore).", 
+    tk_messageBox(type = 'ok', message = "You must choose a randomization file (plate 1 in DFExplore).",
                   icon = "warning", caption = "Error")
     break;
   }
   ######################################################################################
   #imaging form
-  fileSelector = tk_messageBox(type = "okcancel", message = "Please select your Imaging Form CSV file (Plate 16).", 
+  fileSelector = tk_messageBox(type = "okcancel", message = "Please select your Imaging Form CSV file (Plate 16).",
                                caption = "Enter Imaging Form CSV")
   if (fileSelector == "ok"){
     imgf <- file.choose()
     imgf <- read.csv(imgf, header = T)
   } else {
-    tk_messageBox(type = 'ok', message = "You must choose an Imaging Form file (plate 16 in DFExplore).", 
+    tk_messageBox(type = 'ok', message = "You must choose an Imaging Form file (plate 16 in DFExplore).",
                   icon = "warning", caption = "Error")
     break;
   }
   ######################################################################################
   #Baseline CT Form
-  fileSelector = tk_messageBox(type = "okcancel", message = "Please select your Baseline CT/CTA Site Assessment CSV File (Plate 12).", 
+  fileSelector = tk_messageBox(type = "okcancel", message = "Please select your Baseline CT/CTA Site Assessment CSV File (Plate 12).",
                                caption = "Enter Baseline CT/CTA Site Assessment CSV")
   if (fileSelector == "ok"){
     blct <- file.choose()
     blct <- read.csv(blct, header = T)
   } else {
-    tk_messageBox(type = 'ok', message = "You must choose a Baseline CT/CTA Site Assessment file (plate 12 in DFExplore).", 
+    tk_messageBox(type = 'ok', message = "You must choose a Baseline CT/CTA Site Assessment file (plate 12 in DFExplore).",
                   icon = "warning", caption = "Error")
     break;
   }
   ######################################################################################
   #Treatment Assignment Form
-  fileSelector = tk_messageBox(type = "okcancel", message = "Please select a Treatment Assignment CSV File (Plate 13).", 
+  fileSelector = tk_messageBox(type = "okcancel", message = "Please select a Treatment Assignment CSV File (Plate 13).",
                                caption = "Enter Treatment Assignment CSV")
   if (fileSelector == "ok"){
     ta <- file.choose()
     ta <- read.csv(ta, header = T)
   } else {
-    tk_messageBox(type = 'ok', message = "You must choose a Treatment Assignment file (plate 13 in DFExplore).", 
+    tk_messageBox(type = 'ok', message = "You must choose a Treatment Assignment file (plate 13 in DFExplore).",
                   icon = "warning", caption = "Error")
     break;
   }
@@ -54,12 +54,12 @@ newFrame <- function(){
   ImgBLCT <- merge(imgf,blct, all.x = T, by = "ptid")
   merge1 <- merge(RandDem,ImgBLCT,all.x=T,by="ptid")
   tableForUse <- merge(merge1,ta,all.x=T,by="ptid")
-  
+
   ######################################################################################
   #Return to Caller
   tk_messageBox(type = 'ok', message = "Finished Successfully.", caption = "Success")
   return(as.data.frame(tableForUse))
-  
+
   ######################################################################################
 }
 
@@ -73,13 +73,13 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
     pdftitle = "All Sites "
     pdfdate = Sys.Date()
     pdf(paste(pdftitle, pdfdate, ".pdf", sep = ""), paper = "letter", pagecentre = T)
-    
+
     #
     #
     #
     #
     #
-    
+
     #########################################################
     #subjects recruited by month - boxplot
     DateTable = Table1
@@ -87,13 +87,13 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
     tab <- table(cut(DateTable$rdm_date, 'month'))
     DatesByMonth <- data.frame(Date=format(as.Date(names(tab)), '%m/%Y'),
                                Frequency=as.vector(tab))
-    boxplot(DatesByMonth$Frequency,main = paste("Subjects Recruited by Month - All Sites","\n",n), 
+    boxplot(DatesByMonth$Frequency,main = paste("Subjects Recruited by Month - All Sites","\n",n),
             ylab = "Number of Subjects", axis.lty = 1, horizontal = F)
     text(y=fivenum(DatesByMonth$Frequency), labels = fivenum(DatesByMonth$Frequency), x=1.25)
-    
+
     #########################################################
     #Imaging Modality
-    
+
     #piechart
     ImgTable = Table1
     imgmod <- table(ImgTable$image_rdm)
@@ -108,7 +108,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
     cols = c("#E0F3DB", "#A8DDB5", "#4EB3D3", "#0868AC")
     pie(imgmod, main = paste("Imaging Modality Used to Randomize - All Sites","\n",n), labels = piepercent, clockwise = T,col = cols)
     legend("topright", c("spCTA","mCTA","CTP","MRA"), fill = cols)
-    
+
     #stacked barplot
     ImgTable = Table1
     imgmod <- table(ImgTable$image_rdm)
@@ -122,7 +122,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
     yvals<-apply(imgmod,2,cumsum)
     yv2<-(rbind(yvals,0)+rbind(0,yvals))[1:4,]/2
     text(xs,yv2, rownames(yvals), cex = 1.0)
-    
+
     #########################################################
     #TNK vs Control
     TNK = sum(Table1$treatment)/length(Table1$ptid)
@@ -138,7 +138,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
     cols = c("#E0F3DB", "#4EB3D3")
     pie(x, labels = piepercent, main = paste("TNK vs Control - All Sites","\n",n), clockwise = T, col = cols)
     legend("topright", c("TNK","Control"), fill = cols)
-    
+
     #########################################################
     #Time of Onset to TNK/Control
     onsettoTNK<-vector()
@@ -163,21 +163,21 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
         }
       }
     }
-    
+
     for (i in 1:length(onsettoCTRL)){
       if (!is.na(onsettoCTRL[i]) && onsettoCTRL[i] < 0){
         onsettoCTRL[i] <- NA
       }
     }
-    
+
     aa = data.frame(group = paste("\n","Time from Onset to Control","\n",nControl), value = onsettoCTRL)
     bb = data.frame(group = paste("\n","Time from Onset to TNK","\n",nTNK), value = onsettoTNK)
     aabb = rbind(aa,bb)
-    boxplot(aabb$value~aabb$group, na.rm = T, main = "Time from Onset to TNK/Control - All Sites", 
+    boxplot(aabb$value~aabb$group, na.rm = T, main = "Time from Onset to TNK/Control - All Sites",
             ylab = "Time (Hours)", ylim = c(0,20), staplewex = 1, las = 1, xlab = NULL, par(mgp = c(3,1.5,0)))
     text(y=fivenum(onsettoCTRL), labels = fivenum(onsettoCTRL), x=1.5)
     text(y=fivenum(onsettoTNK), labels = fivenum(onsettoTNK), x= 2.5)
-    
+
     #########################################################
     #Time of Onset to Randomization
     timeonsettocontrol<-vector()
@@ -191,11 +191,11 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
       }
     }
     Table1$timeonsettocontrol<-timeonsettocontrol
-    
-    boxplot(timeonsettocontrol, na.rm=T, main = paste("Time from Onset to Randomization - All Sites","\n",n), 
+
+    boxplot(timeonsettocontrol, na.rm=T, main = paste("Time from Onset to Randomization - All Sites","\n",n),
             ylab = "Time (Hours)", horizontal = F, staplewex = 1)
     text(y=fivenum(timeonsettocontrol), labels = fivenum(timeonsettocontrol), x=1.25)
-    
+
     #########################################################
     #Time from CT to TNK/CTRL
     timeBLCTtoTNK<-vector()
@@ -210,7 +210,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
         }
       }
     }
-    
+
     timeBLCTtoCTRL<-vector()
     for (row in 1:nrow(Table1)){
       if (Table1$treatment[row] == 0 && !is.null(Table1$bl_ct_date.x[row]) && !is.na(Table1$bl_ct_date.x[row]) && (Table1$bl_ct_date.x[row] != "") && !is.null(Table1$ta_c_date_1stdose[row]) && !is.na(Table1$ta_c_date_1stdose[row]) && (Table1$ta_c_date_1stdose[row] != "") && (Table1$ta_c_time_1stdose[row] != "") && !is.null(Table1$ta_c_time_1stdose) && !is.na(Table1$ta_c_time_1stdose[row])){
@@ -223,21 +223,21 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
         }
       }
     }
-    
+
     for (i in 1:length(timeBLCTtoCTRL)){
       if (!is.na(timeBLCTtoCTRL[i]) && timeBLCTtoCTRL[i] < 0){
         timeBLCTtoCTRL[i] <- NA
       }
     }
-    
+
     aa = data.frame(group = paste("\n","Time from Baseline CT to Control","\n",nControl), value = timeBLCTtoCTRL)
     bb = data.frame(group = paste("\n","Time from Baseline CT to TNK","\n",nTNK), value = timeBLCTtoTNK)
     aabb = rbind(aa,bb)
-    boxplot(aabb$value~aabb$group, na.rm = T, main = "Time from Baseline CT to TNK/Control - All Sites", 
+    boxplot(aabb$value~aabb$group, na.rm = T, main = "Time from Baseline CT to TNK/Control - All Sites",
             ylab = "Time (Hours)", ylim = c(0,4), staplewex = 1, las = 1, xlab = NULL, par(mgp = c(3,1.5,0)))
     text(y=fivenum(timeBLCTtoCTRL), labels = fivenum(timeBLCTtoCTRL), x=1.5)
     text(y=fivenum(timeBLCTtoTNK), labels = fivenum(timeBLCTtoTNK), x= 2.5)
-    
+
     #########################################################
     #NIHSS
     x<-as.vector(Table1$rdm_nihss)
@@ -245,7 +245,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
     x<-x [! x %in% remove]#gets rid of incorrect values
     boxplot(x, na.rm=T, main = paste("NIHSS Total Score (Baseline) - All Sites","\n",n), ylab = "Score", horizontal = F, staplewex = 1, las = 1)
     text(y=fivenum(x), labels = fivenum(x), x=1.25)
-    
+
     #########################################################
     #AGE
     age_vec <- as.data.frame(Table1$rdm_dob)
@@ -255,7 +255,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
     z<-as.numeric(z)
     boxplot(z, na.rm = T, ylab = "Age (Years)", horizontal = F, staplewex = 1, main = paste("Age of TEMPO-2 Enrollees - All Sites","\n",n))
     text(y=fivenum(z), labels = fivenum(z), x = 1.25)
-    
+
     #########################################################
     #SEX
     SEX_M = sum(Table1$rdm_sex)/length(Table1$ptid)
@@ -269,10 +269,10 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
       piepercent[character] <- paste(piepercent[character], percent)
     }
     cols = c("#E0F3DB", "#4EB3D3")
-    pie(y, labels = piepercent, main = paste("Sex of TEMPO-2 Enrollees - All Sites","\n",n), 
+    pie(y, labels = piepercent, main = paste("Sex of TEMPO-2 Enrollees - All Sites","\n",n),
         clockwise = T, col = cols)
     legend("topright", c("Female","Male"), fill = cols)
-    
+
     #########################################################
     #occlusion location - base data
     ICA = 0
@@ -336,15 +336,15 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
     yvals<-apply(taball,2,cumsum)
     yv2<-(rbind(yvals,0)+rbind(0,yvals))[1:11,]/2
     text(xs,yv2, rownames(yvals), cex = .6)
-    
+
     #standard barplot
     occlocation<-c(ICA,M1,M2,M3,VA,P1,P2,A1,A2,PICA,BA)
     taball<-as.data.frame(occlocation)
     rownames(taball) <- c("ICA", "M1","M2","M3","VA","P1","P2","A1","A2","PICA","BA")
     taball<-t(taball)
-    barplot(taball, main = paste("Occlusion Location - All Sites","\n",n), xlab = "Location", axis.lty = 1, 
+    barplot(taball, main = paste("Occlusion Location - All Sites","\n",n), xlab = "Location", axis.lty = 1,
             ylab = "Number of Cases", las = 1, cex.names = 0.8, ylim = range(pretty(c(0,max(occlocation, na.rm = T)))))
-    
+
     #########################################################
     #Randomization time to treatment
     timeRDMtoTNK<-vector()
@@ -364,7 +364,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
         timeRDMtoTNK[i] <- NA
       }
     }
-    
+
     timeRDMtoCTRL<-vector()
     for (row in 1:nrow(Table1)){
       if (Table1$treatment[row] == 0 && !is.null(Table1$rdm_date[row]) && !is.na(Table1$rdm_date[row]) && (Table1$rdm_date[row] != "") && !is.null(Table1$ta_c_date_1stdose[row]) && !is.na(Table1$ta_c_date_1stdose[row]) && (Table1$ta_c_date_1stdose[row] != "") && (Table1$ta_c_time_1stdose[row] != "") && !is.null(Table1$ta_c_time_1stdose) && !is.na(Table1$ta_c_time_1stdose[row])){
@@ -382,34 +382,34 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
         timeRDMtoCTRL[i] <- NA
       }
     }
-    
+
     timeRDMtoTNK<-timeRDMtoTNK*60
     timeRDMtoCTRL<-timeRDMtoCTRL*60
-    
+
     aa = data.frame(group = paste("\n","Randomization to Control","\n",nControl), value = timeRDMtoCTRL)
     bb = data.frame(group = paste("\n","Randomization to TNK","\n",nTNK), value = timeRDMtoTNK)
     aabb = rbind(aa,bb)
-    boxplot(aabb$value~aabb$group, na.rm = T, main = "Time from Randomization to TNK/Control - All Sites", 
-            ylab = "Time (Minutes)", ylim = range(pretty(c(0,max(timeRDMtoTNK, na.rm = T)))), staplewex = 1, las = 1, 
+    boxplot(aabb$value~aabb$group, na.rm = T, main = "Time from Randomization to TNK/Control - All Sites",
+            ylab = "Time (Minutes)", ylim = range(pretty(c(0,max(timeRDMtoTNK, na.rm = T)))), staplewex = 1, las = 1,
             xlab = NULL, par(mgp = c(3,1.5,0)))
     text(y=fivenum(timeRDMtoCTRL), labels = fivenum(timeRDMtoCTRL), x=1.5)
     text(y=fivenum(timeRDMtoTNK), labels = fivenum(timeRDMtoTNK), x= 2.5)
-    
+
     #
     #
     #
     #
     #
-    
+
     dev.off()
     print("Finished All-Sites PDF Successfully!")
-    
+
     #
     #
     #
     #
     #
-    
+
   }
   if (site != 0 && (typeof(site) == "double" || typeof(site) == "integer") && exists("Frame")){
     Table1 <- Frame
@@ -427,7 +427,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
       sitename = as.character(site)
       n = paste("(n = ",as.character(length(master$ptid)),")", sep = "")
       print(paste("Site ",sitename," has too few enrollees ",n,"."," You need at least 10 enrollees to generate graphs.",sep = ""))
-    } 
+    }
     else {
       setwd(output)
       sitename = as.character(site)
@@ -437,13 +437,13 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
       pdftitle = paste("Site",sitename, sep = "")
       pdfdate = Sys.Date()
       pdf(paste(pdftitle, pdfdate, ".pdf"), paper = "letter", pagecentre = T)
-      
+
       #
       #
       #
       #
       #
-      
+
       #########################################################
       #subjects recruited by month - boxplot
       DateTable = master
@@ -454,10 +454,10 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
       boxplot(DatesByMonth$Frequency,main = paste("Subjects Recruited by Month - Site",sitename,"\n",n),
               ylab = "Number of Subjects", axis.lty = 1, horizontal = F)
       text(y=fivenum(DatesByMonth$Frequency), labels = fivenum(DatesByMonth$Frequency), x=1.25)
-      
+
       #########################################################
       #Imaging Modality
-      
+
       #piechart
       ImgTable = master
       imgmod <- table(ImgTable$image_rdm)
@@ -485,7 +485,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
       cols = c("#E0F3DB", "#A8DDB5", "#4EB3D3", "#0868AC")
       pie(imgmod, main = paste("Imaging Modality Used to Randomize - Site",sitename,"\n",n), labels = piepercent, clockwise = T,col = cols)
       legend("topright", c("spCTA","mCTA","CTP","MRA"), fill = cols)
-      
+
       #stacked barplot
       ImgTable = master
       imgmod <- table(ImgTable$image_rdm)
@@ -512,7 +512,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
       yvals<-apply(imgmod,2,cumsum)
       yv2<-(rbind(yvals,0)+rbind(0,yvals))[1:nrow(imgmod),]/2
       text(xs,yv2, rownames(yvals), cex = 1.0)
-      
+
       #########################################################
       #TNK vs Control
       TNK = sum(master$treatment)/length(master$ptid)
@@ -528,7 +528,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
       cols = c("#E0F3DB", "#4EB3D3")
       pie(x, labels = piepercent, main = paste("TNK vs Control - Site",sitename,"\n",n), clockwise = T, col = cols)
       legend("topright", c("TNK","Control"), fill = cols)
-      
+
       #########################################################
       #Time of Onset to TNK/Control
       onsettoTNK<-vector()
@@ -553,21 +553,21 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
           }
         }
       }
-      
+
       for (i in 1:length(onsettoCTRL)){
         if (!is.na(onsettoCTRL[i]) && onsettoCTRL[i] < 0){
           onsettoCTRL[i] <- NA
         }
       }
-      
+
       aa = data.frame(group = paste("\n","Time from Onset to Control","\n",nControl), value = onsettoCTRL)
       bb = data.frame(group = paste("\n","Time from Onset to TNK","\n",nTNK), value = onsettoTNK)
       aabb = rbind(aa,bb)
-      boxplot(aabb$value~aabb$group, na.rm = T, main = paste("Time from Onset to TNK/Control - Site",sitename), 
+      boxplot(aabb$value~aabb$group, na.rm = T, main = paste("Time from Onset to TNK/Control - Site",sitename),
               ylab = "Time (Hours)", ylim = c(0,20), staplewex = 1, las = 1, xlab = NULL, par(mgp = c(3,1.5,0)))
       text(y=fivenum(onsettoCTRL), labels = fivenum(onsettoCTRL), x=1.5)
       text(y=fivenum(onsettoTNK), labels = fivenum(onsettoTNK), x= 2.5)
-      
+
       #########################################################
       #Time of Onset to Randomization
       timeonsettocontrol<-vector()
@@ -581,11 +581,11 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
         }
       }
       master$timeonsettocontrol<-timeonsettocontrol
-      
-      boxplot(timeonsettocontrol, na.rm=T, main = paste("Time from Onset to Randomization - Site",sitename,"\n",n), 
+
+      boxplot(timeonsettocontrol, na.rm=T, main = paste("Time from Onset to Randomization - Site",sitename,"\n",n),
               ylab = "Time (Hours)", horizontal = F, staplewex = 1)
       text(y=fivenum(timeonsettocontrol), labels = fivenum(timeonsettocontrol), x=1.25)
-      
+
       #########################################################
       #Time from CT to TNK/CTRL
       timeBLCTtoTNK<-vector()
@@ -600,7 +600,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
           }
         }
       }
-      
+
       timeBLCTtoCTRL<-vector()
       for (row in 1:nrow(master)){
         if (master$treatment[row] == 0 && !is.null(master$bl_ct_date.x[row]) && !is.na(master$bl_ct_date.x[row]) && (master$bl_ct_date.x[row] != "") && !is.null(master$ta_c_date_1stdose[row]) && !is.na(master$ta_c_date_1stdose[row]) && (master$ta_c_date_1stdose[row] != "") && (master$ta_c_time_1stdose[row] != "") && !is.null(master$ta_c_time_1stdose) && !is.na(master$ta_c_time_1stdose[row])){
@@ -613,21 +613,21 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
           }
         }
       }
-      
+
       for (i in 1:length(timeBLCTtoCTRL)){
         if (!is.na(timeBLCTtoCTRL[i]) && timeBLCTtoCTRL[i] < 0){
           timeBLCTtoCTRL[i] <- NA
         }
       }
-      
+
       aa = data.frame(group = paste("\n","Time from Baseline CT to Control","\n",nControl), value = timeBLCTtoCTRL)
       bb = data.frame(group = paste("\n","Time from Baseline CT to TNK","\n",nTNK), value = timeBLCTtoTNK)
       aabb = rbind(aa,bb)
-      boxplot(aabb$value~aabb$group, na.rm = T, main = paste("Time from Baseline CT to TNK/Control - Site",sitename), 
+      boxplot(aabb$value~aabb$group, na.rm = T, main = paste("Time from Baseline CT to TNK/Control - Site",sitename),
               ylab = "Time (Hours)", ylim = c(0,4), staplewex = 1, las = 1, xlab = NULL, par(mgp = c(3,1.5,0)))
       text(y=fivenum(timeBLCTtoCTRL), labels = fivenum(timeBLCTtoCTRL), x=1.5)
       text(y=fivenum(timeBLCTtoTNK), labels = fivenum(timeBLCTtoTNK), x= 2.5)
-      
+
       #########################################################
       #NIHSS
       x<-as.vector(master$rdm_nihss)
@@ -635,7 +635,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
       x<-x [! x %in% remove]#gets rid of incorrect values
       boxplot(x, na.rm=T, main = paste("NIHSS Total Score (Baseline) - Site",sitename,"\n",n), ylab = "Score", horizontal = F, staplewex = 1, las = 1)
       text(y=fivenum(x), labels = fivenum(x), x=1.25)
-      
+
       #########################################################
       #AGE
       age_vec <- as.data.frame(master$rdm_dob)
@@ -645,7 +645,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
       z<-as.numeric(z)
       boxplot(z, na.rm = T, ylab = "Age (Years)", horizontal = F, staplewex = 1, main = paste("Age of TEMPO-2 Enrollees - Site",sitename,"\n",n))
       text(y=fivenum(z), labels = fivenum(z), x = 1.25)
-      
+
       #########################################################
       #SEX
       SEX_M = sum(master$rdm_sex)/length(master$ptid)
@@ -659,10 +659,10 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
         piepercent[character] <- paste(piepercent[character], percent)
       }
       cols = c("#E0F3DB", "#4EB3D3")
-      pie(y, labels = piepercent, main = paste("Sex of TEMPO-2 Enrollees - Site",sitename,"\n",n), 
+      pie(y, labels = piepercent, main = paste("Sex of TEMPO-2 Enrollees - Site",sitename,"\n",n),
           clockwise = T, col = cols)
       legend("topright", c("Female","Male"), fill = cols)
-      
+
       #########################################################
       #occlusion location - base data
       ICA = 0
@@ -741,15 +741,15 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
       yvals<-apply(taball,2,cumsum)
       yv2<-(rbind(yvals,0)+rbind(0,yvals))[1:nrow(taball),]/2
       text(xs,yv2, rownames(yvals), cex = .6)
-      
+
       #standard barplot
       occlocation<-c(ICA,M1,M2,M3,VA,P1,P2,A1,A2,PICA,BA)
       taball<-as.data.frame(occlocation)
       rownames(taball) <- c("ICA", "M1","M2","M3","VA","P1","P2","A1","A2","PICA","BA")
       taball<-t(taball)
-      barplot(taball, main = paste("Occlusion Location - Site",sitename,"\n",n), xlab = "Location", axis.lty = 1, 
+      barplot(taball, main = paste("Occlusion Location - Site",sitename,"\n",n), xlab = "Location", axis.lty = 1,
               ylab = "Number of Cases", las = 1, cex.names = 0.8, ylim = range(pretty(c(0,max(occlocation, na.rm = T)))))
-      
+
       #########################################################
       #Randomization time to treatment
       timeRDMtoTNK<-vector()
@@ -769,7 +769,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
           timeRDMtoTNK[i] <- NA
         }
       }
-      
+
       timeRDMtoCTRL<-vector()
       for (row in 1:nrow(master)){
         if (master$treatment[row] == 0 && !is.null(master$rdm_date[row]) && !is.na(master$rdm_date[row]) && (master$rdm_date[row] != "") && !is.null(master$ta_c_date_1stdose[row]) && !is.na(master$ta_c_date_1stdose[row]) && (master$ta_c_date_1stdose[row] != "") && (master$ta_c_time_1stdose[row] != "") && !is.null(master$ta_c_time_1stdose) && !is.na(master$ta_c_time_1stdose[row])){
@@ -787,28 +787,28 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
           timeRDMtoCTRL[i] <- NA
         }
       }
-      
+
       timeRDMtoTNK<-timeRDMtoTNK*60
       timeRDMtoCTRL<-timeRDMtoCTRL*60
-      
+
       aa = data.frame(group = paste("\n","Randomization to Control","\n",nControl), value = timeRDMtoCTRL)
       bb = data.frame(group = paste("\n","Randomization to TNK","\n",nTNK), value = timeRDMtoTNK)
       aabb = rbind(aa,bb)
-      boxplot(aabb$value~aabb$group, na.rm = T, main = paste("Time from Randomization to TNK/Control - Site",sitename), 
-              ylab = "Time (Minutes)", ylim = range(pretty(c(0,max(timeRDMtoTNK, na.rm = T)))), staplewex = 1, las = 1, 
+      boxplot(aabb$value~aabb$group, na.rm = T, main = paste("Time from Randomization to TNK/Control - Site",sitename),
+              ylab = "Time (Minutes)", ylim = range(pretty(c(0,max(timeRDMtoTNK, na.rm = T)))), staplewex = 1, las = 1,
               xlab = NULL, par(mgp = c(3,1.5,0)))
       text(y=fivenum(timeRDMtoCTRL), labels = fivenum(timeRDMtoCTRL), x=1.5)
       text(y=fivenum(timeRDMtoTNK), labels = fivenum(timeRDMtoTNK), x= 2.5)
-      
+
       #
       #
       #
       #
       #
-      
+
       dev.off()
       print(paste("Finished Site ",site," PDF Successfully!", sep = ""))
-      
+
       #
       #
       #
@@ -817,3 +817,6 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
     }
   }
 }
+
+install.packages("devtools")
+library(devtools)
