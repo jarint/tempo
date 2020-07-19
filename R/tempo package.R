@@ -1,5 +1,11 @@
 newFrame <- function(){
   ######################################################################################
+  #install tcltk
+  if (require("tcltk")){
+    install.packages("tcltk")
+    library(tcltk)
+  }
+  ######################################################################################
   #randomization
   fileSelector = tk_messageBox(type = "okcancel", message = "Choose your Randomization CSV file (Plate 1).",
                                caption = "Enter Randomization CSV")
