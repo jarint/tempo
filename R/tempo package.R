@@ -817,6 +817,3 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
     }
   }
 }
-
-install.packages("devtools")
-library(devtools)
