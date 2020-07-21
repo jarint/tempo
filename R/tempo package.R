@@ -846,11 +846,11 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
       siteList = UK
       nation = "United Kingdom"
     }
-    if (any(canNames) == site){
+    if (any(canNames == site)){
       siteList = CAN
       nation = "Canada"
     }
-    if (any(usNames) == site){
+    if (any(usNames == site)){
       siteList = US
       nation = "United States"
     }
