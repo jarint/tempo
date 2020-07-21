@@ -822,10 +822,460 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
       #
     }
   }
-  if (site == "ALL" && exists("Frame")){
-    ALL <- c(0:18,20,21,24:26,30:38,40:47,60,61,70:85,87:89,91:96,99)
-    for (i in ALL){
-      Tempo2(Frame, site = i)
+  if (typeof(site) == "character" && exists("Frame")){
+    Table1 <- Frame
+    site <- trimws(site, which = "both")
+    site <- tolower(site)
+    site <- gsub(" ","",site)
+
+    #site vectors by country
+    UK = c(9,20,33,34)
+    CAN = c(1,2,3,6)
+    US = c(35,38,43,70,74)
+
+    #Lists of Possible names
+    ukNames = list("uk","unitedkingdom","theuk","theunitedkingdom")
+    canNames = list("can","canada","ca")
+    usNames = list("us","usa","unitedstates","unitedstatesofamerica","theunitedstates","theunitedstatesofamerica","theus","theusa")
+
+    #site list/name logic
+    siteList = vector()
+    nation = ""
+
+    if (any(ukNames == site)){
+      siteList = UK
+      nation = "United Kingdom"
     }
+    if (any(canNames) == site){
+      siteList = CAN
+      nation = "Canada"
+    }
+    if (any(usNames) == site){
+      siteList = US
+      nation = "United States"
+    }
+
+    #if country name
+    if (length(siteList) > 0){
+      master<-Table1[FALSE, ]
+      for (i in siteList){
+        upper = (i*1000)+999
+        lower = i*1000
+        for (row in 1:nrow(Table1)){
+          for (j in lower:upper){
+            if (Table1$ptid[row] == j){
+              master <- rbind(master,Table1[row, ])
+            }
+          }
+        }
+      }
+      #Less than 10 enrolled in this country
+      if (nrow(master) < 10){
+        sitename = nation
+        n = paste("(n = ",as.character(length(master$ptid)),")", sep = "")
+        print(paste(sitename," has too few enrollees ",n,"."," You need at least 10 enrollees to generate graphs.",sep = ""))
+      } else {
+        #Builds PDF for the country
+        setwd(output)
+        sitename = nation
+        n = paste("(n = ",as.character(length(master$ptid)),")", sep = "")
+        nControl = paste("(n = ",as.character(length(master$ptid)-sum(master$treatment)),")", sep = "")
+        nTNK = paste("(n = ",as.character(sum(master$treatment)),")", sep = "")
+        pdftitle = paste("Site",sitename, sep = "")
+        pdfdate = Sys.Date()
+        pdf(paste(pdftitle, pdfdate, ".pdf"), paper = "letter", pagecentre = T)
+
+        #
+        #
+        #
+        #
+        #
+
+        #########################################################
+        #subjects recruited by month - boxplot
+        Table$rdm_date <- as.Date(DateTable$rdm_date, format="%Y/%m/%d")
+        tab <- table(cut(DateTable$rdm_date, 'month'))
+        DatesByMonth <- data.frame(Date=format(as.Date(names(tab)), '%m/%Y'),
+                                   Frequency=as.vector(tab))
+        boxplot(DatesByMonth$Frequency,main = paste("Subjects Recruited by Month - ",sitename,"\n",n),
+                ylab = "Number of Subjects", axis.lty = 1, horizontal = F)
+        text(y=fivenum(DatesByMonth$Frequency), labels = fivenum(DatesByMonth$Frequency), x=1.25)
+
+        #########################################################
+        #Imaging Modality
+
+        #piechart
+        ImgTable = master
+        imgmod <- table(ImgTable$image_rdm)
+        for (row in 1:nrow(imgmod)) {
+          if (rownames(imgmod)[row] == "1"){
+            rownames(imgmod)[row] <- "spCTA"
+          }
+          if (rownames(imgmod)[row] == "2"){
+            rownames(imgmod)[row] <- "mCTA"
+          }
+          if (rownames(imgmod)[row] == "3"){
+            rownames(imgmod)[row] <- "CTP"
+          }
+          if (rownames(imgmod)[row] == "4"){
+            rownames(imgmod)[row] <- "MRA"
+          }
+        }
+        piepercent<- (round(imgmod/sum(imgmod), 5)*100)
+        piepercent<-signif(piepercent, digits = 3)
+        piepercent <- as.character(piepercent)
+        percent = "%"
+        for (character in 1:length(piepercent)){
+          piepercent[character] <- paste(piepercent[character], percent)
+        }
+        cols = c("#E0F3DB", "#A8DDB5", "#4EB3D3", "#0868AC")
+        pie(imgmod, main = paste("Imaging Modality Used to Randomize - ",sitename,"\n",n), labels = piepercent, clockwise = T,col = cols)
+        legend("topright", c("spCTA","mCTA","CTP","MRA"), fill = cols)
+
+        #stacked barplot
+        ImgTable = master
+        imgmod <- table(ImgTable$image_rdm)
+        for (row in 1:nrow(imgmod)) {
+          if (rownames(imgmod)[row] == "1"){
+            rownames(imgmod)[row] <- "spCTA"
+          }
+          if (rownames(imgmod)[row] == "2"){
+            rownames(imgmod)[row] <- "mCTA"
+          }
+          if (rownames(imgmod)[row] == "3"){
+            rownames(imgmod)[row] <- "CTP"
+          }
+          if (rownames(imgmod)[row] == "4"){
+            rownames(imgmod)[row] <- "MRA"
+          }
+        }
+        imgmod<-t(imgmod)
+        imgmod<-t(imgmod)
+        cols = c("#E0F3DB", "#A8DDB5", "#4EB3D3", "#0868AC")
+        xs<-barplot(imgmod, legend =F,col = cols,
+                    ylim = range(pretty(c(0,length(master$ptid)))),
+                    main = paste("Imaging Modality Used to Randomize - ",sitename,"\n",n))
+        yvals<-apply(imgmod,2,cumsum)
+        yv2<-(rbind(yvals,0)+rbind(0,yvals))[1:nrow(imgmod),]/2
+        text(xs,yv2, rownames(yvals), cex = 1.0)
+
+        #########################################################
+        #TNK vs Control
+        TNK = sum(master$treatment)/length(master$ptid)
+        CONTROL = 1-TNK
+        x<-c(TNK,CONTROL)
+        piepercent<- round(100*x/sum(x), 5)
+        piepercent<-signif(piepercent, digits = 3)
+        piepercent <- as.character(piepercent)
+        percent = "%"
+        for (character in 1:length(piepercent)){
+          piepercent[character] <- paste(piepercent[character], percent)
+        }
+        cols = c("#E0F3DB", "#4EB3D3")
+        pie(x, labels = piepercent, main = paste("TNK vs Control - ",sitename,"\n",n), clockwise = T, col = cols)
+        legend("topright", c("TNK","Control"), fill = cols)
+
+        #########################################################
+        #Time of Onset to TNK/Control
+        onsettoTNK<-vector()
+        onsettoCTRL <- vector()
+        for (row in 1:nrow(master)){
+          if (master$treatment[row] == 1 && master$ta_tnk_date_1stdose[row] != "" && !is.na(master$ta_tnk_date_1stdose[row]) && !is.null(master$ta_tnk_date_1stdose[row]) && master$rdm_onset_date[row] != "" && !is.na(master$rdm_onset_date[row]) && !is.null(master$rdm_onset_date[row])){
+            if (master$rdm_onset_date[row] == master$ta_tnk_date_1stdose[row]){
+              difference4 = (master$ta_tnk_time_1stdose[row] - master$rdm_onset_time[row])/100
+              onsettoTNK <- c(onsettoTNK, difference4)
+            } else {
+              difference4 = ((2400-master$rdm_onset_time[row])+as.integer(as.character(master$ta_tnk_time_1stdose[row]))/100)
+              onsettoTNK <- c(onsettoTNK, difference4)
+            }
+          }
+          if (master$treatment[row] == 0 && master$ta_c_date_1stdose[row] != "" && !is.na(master$ta_c_date_1stdose[row]) && !is.null(master$ta_c_date_1stdose[row]) && master$rdm_onset_date[row] != "" && !is.na(master$rdm_onset_date[row]) && !is.null(master$rdm_onset_date[row])){
+            if (master$rdm_onset_date[row] == master$ta_c_date_1stdose[row]){
+              difference5 = (as.integer(as.character(master$ta_c_time_1stdose[row])) - master$rdm_onset_time[row])/100
+              onsettoCTRL <- c(onsettoCTRL, difference5)
+            } else {
+              difference5 = ((2400-master$rdm_onset_time[row])+as.integer(as.character(master$ta_c_time_1stdose[row]))/100)
+              onsettoCTRL <- c(onsettoCTRL, difference5)
+            }
+          }
+        }
+
+        for (i in 1:length(onsettoCTRL)){
+          if (!is.na(onsettoCTRL[i]) && onsettoCTRL[i] < 0){
+            onsettoCTRL[i] <- NA
+          }
+        }
+
+        aa = data.frame(group = paste("\n","Time from Onset to Control","\n",nControl), value = onsettoCTRL)
+        bb = data.frame(group = paste("\n","Time from Onset to TNK","\n",nTNK), value = onsettoTNK)
+        aabb = rbind(aa,bb)
+        boxplot(aabb$value~aabb$group, na.rm = T, main = paste("Time from Onset to TNK/Control - ",sitename),
+                ylab = "Time (Hours)", ylim = c(0,20), staplewex = 1, las = 1, xlab = NULL, par(mgp = c(3,1.5,0)))
+        text(y=fivenum(onsettoCTRL), labels = fivenum(onsettoCTRL), x=1.5)
+        text(y=fivenum(onsettoTNK), labels = fivenum(onsettoTNK), x= 2.5)
+
+        #########################################################
+        #Time of Onset to Randomization
+        timeonsettocontrol<-vector()
+        for (row in 1:nrow(master)){
+          if (master$rdm_date[row] == master$rdm_onset_date[row]){
+            difference = (master$rdm_time[row]-master$rdm_onset_time[row])/100
+            timeonsettocontrol <- c(timeonsettocontrol,difference)
+          } else {
+            difference = ((2400-master$rdm_onset_time[row])+master$rdm_time[row])/100
+            timeonsettocontrol <- c(timeonsettocontrol,difference)
+          }
+        }
+        master$timeonsettocontrol<-timeonsettocontrol
+
+        boxplot(timeonsettocontrol, na.rm=T, main = paste("Time from Onset to Randomization - ",sitename,"\n",n),
+                ylab = "Time (Hours)", horizontal = F, staplewex = 1)
+        text(y=fivenum(timeonsettocontrol), labels = fivenum(timeonsettocontrol), x=1.25)
+
+        #########################################################
+        #Time from CT to TNK/CTRL
+        timeBLCTtoTNK<-vector()
+        for (row in 1:nrow(master)){
+          if (master$treatment[row] == 1 && !is.null(master$bl_ct_date.x[row]) && !is.na(master$bl_ct_date.x[row]) && master$bl_ct_date.x[row] != "" && !is.null(master$ta_tnk_date_1stdose[row]) && !is.na(master$ta_tnk_date_1stdose[row]) && master$ta_tnk_date_1stdose[row] != ""){
+            if (master$bl_ct_date.x[row] == master$ta_tnk_date_1stdose[row]){
+              difference2 = (as.integer(master$ta_tnk_time_1stdose[row])-as.integer(master$bl_ct_time.x[row]))/100
+              timeBLCTtoTNK <- c(timeBLCTtoTNK, difference2)
+            } else {
+              difference2 = ((2400-as.integer(master$bl_ct_time.x[row]))+as.integer(master$ta_tnk_time_1stdose[row]))/100
+              timeBLCTtoTNK <- c(timeBLCTtoTNK, difference2)
+            }
+          }
+        }
+
+        timeBLCTtoCTRL<-vector()
+        for (row in 1:nrow(master)){
+          if (master$treatment[row] == 0 && !is.null(master$bl_ct_date.x[row]) && !is.na(master$bl_ct_date.x[row]) && (master$bl_ct_date.x[row] != "") && !is.null(master$ta_c_date_1stdose[row]) && !is.na(master$ta_c_date_1stdose[row]) && (master$ta_c_date_1stdose[row] != "") && (master$ta_c_time_1stdose[row] != "") && !is.null(master$ta_c_time_1stdose) && !is.na(master$ta_c_time_1stdose[row])){
+            if (master$bl_ct_date.x[row] == master$ta_c_date_1stdose[row]){
+              difference3 = (as.integer(as.character(master$ta_c_time_1stdose[row]))-as.integer(master$bl_ct_time.x[row]))/100
+              timeBLCTtoCTRL <- c(timeBLCTtoCTRL, difference3)
+            } else if (master$bl_ct_date.x[row] != master$ta_c_date_1stdose[row]) {
+              difference3 = ((2400-as.integer(master$bl_ct_time.x[row]))+as.integer(as.character(master$ta_c_time_1stdose[row])))/100
+              timeBLCTtoCTRL <- c(timeBLCTtoCTRL, difference3)
+            }
+          }
+        }
+
+        for (i in 1:length(timeBLCTtoCTRL)){
+          if (!is.na(timeBLCTtoCTRL[i]) && timeBLCTtoCTRL[i] < 0){
+            timeBLCTtoCTRL[i] <- NA
+          }
+        }
+
+        aa = data.frame(group = paste("\n","Time from Baseline CT to Control","\n",nControl), value = timeBLCTtoCTRL)
+        bb = data.frame(group = paste("\n","Time from Baseline CT to TNK","\n",nTNK), value = timeBLCTtoTNK)
+        aabb = rbind(aa,bb)
+        boxplot(aabb$value~aabb$group, na.rm = T, main = paste("Time from Baseline CT to TNK/Control - ",sitename),
+                ylab = "Time (Hours)", ylim = c(0,4), staplewex = 1, las = 1, xlab = NULL, par(mgp = c(3,1.5,0)))
+        text(y=fivenum(timeBLCTtoCTRL), labels = fivenum(timeBLCTtoCTRL), x=1.5)
+        text(y=fivenum(timeBLCTtoTNK), labels = fivenum(timeBLCTtoTNK), x= 2.5)
+
+        #########################################################
+        #NIHSS
+        x<-as.vector(master$rdm_nihss)
+        remove<-c(99)
+        x<-x [! x %in% remove]#gets rid of incorrect values
+        boxplot(x, na.rm=T, main = paste("NIHSS Total Score (Baseline) - ",sitename,"\n",n), ylab = "Score", horizontal = F, staplewex = 1, las = 1)
+        text(y=fivenum(x), labels = fivenum(x), x=1.25)
+
+        #########################################################
+        #AGE
+        age_vec <- as.data.frame(master$rdm_dob)
+        age_vec<-as.Date(paste(as.character(age_vec$`master$rdm_dob`), '01'), format = '%Y%m%d')
+        z<-c((Sys.Date()-age_vec)/365)
+        z<-signif(z, digits = 3)
+        z<-as.numeric(z)
+        boxplot(z, na.rm = T, ylab = "Age (Years)", horizontal = F, staplewex = 1, main = paste("Age of TEMPO-2 Enrollees - ",sitename,"\n",n))
+        text(y=fivenum(z), labels = fivenum(z), x = 1.25)
+
+        #########################################################
+        #SEX
+        SEX_M = sum(master$rdm_sex)/length(master$ptid)
+        SEX_F = 1-SEX_M
+        y <- c(SEX_F,SEX_M)
+        piepercent<- round(100*y/sum(y), 5)
+        piepercent<-signif(piepercent, digits = 3)
+        piepercent <- as.character(piepercent)
+        percent = "%"
+        for (character in 1:length(piepercent)){
+          piepercent[character] <- paste(piepercent[character], percent)
+        }
+        cols = c("#E0F3DB", "#4EB3D3")
+        pie(y, labels = piepercent, main = paste("Sex of TEMPO-2 Enrollees - ",sitename,"\n",n),
+            clockwise = T, col = cols)
+        legend("topright", c("Female","Male"), fill = cols)
+
+        #########################################################
+        #occlusion location - base data
+        ICA = 0
+        M1 = 0
+        M2 = 0
+        M3 = 0
+        VA = 0
+        P1 = 0
+        P2 = 0
+        A1 = 0
+        A2 = 0
+        PICA = 0
+        BA = 0
+        for (row in 1:nrow(master)){
+          if (!is.na(master$occl_location[row])){
+            if (master$occl_location[row] == 1 || master$occl_location[row] == 2){
+              ICA <- ICA + 1
+            }
+            if (master$occl_location[row] == 3 || master$occl_location[row] == 4){
+              M1 <- M1 + 1
+            }
+            if (master$occl_location[row] == 5 || master$occl_location[row] == 6){
+              M2 <- M2 + 1
+            }
+            if (master$occl_location[row] == 7 || master$occl_location[row] == 8){
+              M3 <- M3 + 1
+            }
+            if (master$occl_location[row] == 9 || master$occl_location[row] == 10){
+              VA <- VA + 1
+            }
+            if (master$occl_location[row] == 11 || master$occl_location[row] == 12){
+              P1 <- P1 + 1
+            }
+            if (master$occl_location[row] == 13 || master$occl_location[row] == 14){
+              P2 <- P2 + 1
+            }
+            if (master$occl_location[row] == 15 || master$occl_location[row] == 16){
+              A1 <- A1 + 1
+            }
+            if (master$occl_location[row] == 17 || master$occl_location[row] == 18){
+              A2 <- A2 + 1
+            }
+            if (master$occl_location[row] == 19 || master$occl_location[row] == 20){
+              PICA <- PICA + 1
+            }
+            if (master$occl_location[row] == 99){
+              BA <- BA + 1
+            }
+          }
+        }
+        #stacked barplot
+        occlocation<-c(ICA,M1,M2,M3,VA,P1,P2,A1,A2,PICA,BA)
+        taball<-as.data.frame(occlocation)
+        rownames(taball) <- c("ICA", "M1","M2","M3","VA","P1","P2","A1","A2","PICA","BA")
+        newRowNames = vector()
+        removeList = vector()
+        for(row in rownames(taball)){
+          if (taball[row,] != 0){
+            newRowNames<-c(newRowNames, row)
+          }
+        }
+        for(row in 1:nrow(taball)){
+          if (taball[row,] == 0){
+            removeList<-c(removeList, as.integer(row))
+          }
+        }
+        taball<-taball[-c(removeList),]
+        taball <- as.data.frame(taball)
+        rownames(taball)<-newRowNames
+        taball<-t(taball)
+        taball<-t(taball)
+        cols = c("#F7FCF0", "#E0F3DB", "#CCEBC5", "#A8DDB5", "#7BCCC4", "#4EB3D3", "#2B8CBE", "#0868AC", "#084081")
+        xs<-barplot(taball, legend =F,col = cols,
+                    ylim = range(pretty(c(0,length(master$ptid)))),
+                    main = paste("Occlusion Location - ",sitename,"\n",n), ylab = "Number of Subjects")
+        yvals<-apply(taball,2,cumsum)
+        yv2<-(rbind(yvals,0)+rbind(0,yvals))[1:nrow(taball),]/2
+        text(xs,yv2, rownames(yvals), cex = .6)
+
+        #standard barplot
+        occlocation<-c(ICA,M1,M2,M3,VA,P1,P2,A1,A2,PICA,BA)
+        taball<-as.data.frame(occlocation)
+        rownames(taball) <- c("ICA", "M1","M2","M3","VA","P1","P2","A1","A2","PICA","BA")
+        taball<-t(taball)
+        barplot(taball, main = paste("Occlusion Location - ",sitename,"\n",n), xlab = "Location", axis.lty = 1,
+                ylab = "Number of Cases", las = 1, cex.names = 0.8, ylim = range(pretty(c(0,max(occlocation, na.rm = T)))))
+
+        #########################################################
+        #Randomization time to treatment
+        timeRDMtoTNK<-vector()
+        for (row in 1:nrow(master)){
+          if (master$treatment[row] == 1 && !is.null(master$rdm_date[row]) && !is.na(master$rdm_date[row]) && master$rdm_date[row] != "" && !is.null(master$ta_tnk_date_1stdose[row]) && !is.na(master$ta_tnk_date_1stdose[row]) && master$ta_tnk_date_1stdose[row] != ""){
+            if (master$rdm_date[row] == master$ta_tnk_date_1stdose[row]){
+              difference2 = (as.integer(master$ta_tnk_time_1stdose[row])-as.integer(master$rdm_time[row]))/100
+              timeRDMtoTNK <- c(timeRDMtoTNK, difference2)
+            } else {
+              difference2 = ((2400-as.integer(master$rdm_time[row]))+as.integer(master$ta_tnk_time_1stdose[row]))/100
+              timeRDMtoTNK <- c(timeRDMtoTNK, difference2)
+            }
+          }
+        }
+        for (i in 1:length(timeRDMtoTNK)){
+          if (!is.na(timeRDMtoTNK[i]) && timeRDMtoTNK[i] < 0){
+            timeRDMtoTNK[i] <- NA
+          }
+        }
+
+        timeRDMtoCTRL<-vector()
+        for (row in 1:nrow(master)){
+          if (master$treatment[row] == 0 && !is.null(master$rdm_date[row]) && !is.na(master$rdm_date[row]) && (master$rdm_date[row] != "") && !is.null(master$ta_c_date_1stdose[row]) && !is.na(master$ta_c_date_1stdose[row]) && (master$ta_c_date_1stdose[row] != "") && (master$ta_c_time_1stdose[row] != "") && !is.null(master$ta_c_time_1stdose) && !is.na(master$ta_c_time_1stdose[row])){
+            if (master$rdm_date[row] == master$ta_c_date_1stdose[row]){
+              difference3 = (as.integer(as.character(master$ta_c_time_1stdose[row]))-as.integer(master$rdm_time[row]))/100
+              timeRDMtoCTRL <- c(timeRDMtoCTRL, difference3)
+            } else if (master$rdm_date[row] != master$ta_c_date_1stdose[row]) {
+              difference3 = ((2400-as.integer(master$rdm_time[row]))+as.integer(as.character(master$ta_c_time_1stdose[row])))/100
+              timeRDMtoCTRL <- c(timeRDMtoCTRL, difference3)
+            }
+          }
+        }
+        for (i in 1:length(timeRDMtoCTRL)){
+          if (!is.na(timeRDMtoCTRL[i]) && timeRDMtoCTRL[i] < 0){
+            timeRDMtoCTRL[i] <- NA
+          }
+        }
+
+        timeRDMtoTNK<-timeRDMtoTNK*60
+        timeRDMtoCTRL<-timeRDMtoCTRL*60
+
+        aa = data.frame(group = paste("\n","Randomization to Control","\n",nControl), value = timeRDMtoCTRL)
+        bb = data.frame(group = paste("\n","Randomization to TNK","\n",nTNK), value = timeRDMtoTNK)
+        aabb = rbind(aa,bb)
+        boxplot(aabb$value~aabb$group, na.rm = T, main = paste("Time from Randomization to TNK/Control - ",sitename),
+                ylab = "Time (Minutes)", ylim = range(pretty(c(0,max(timeRDMtoTNK, na.rm = T)))), staplewex = 1, las = 1,
+                xlab = NULL, par(mgp = c(3,1.5,0)))
+        text(y=fivenum(timeRDMtoCTRL), labels = fivenum(timeRDMtoCTRL), x=1.5)
+        text(y=fivenum(timeRDMtoTNK), labels = fivenum(timeRDMtoTNK), x= 2.5)
+
+        #
+        #
+        #
+        #
+        #
+
+        dev.off()
+        print(paste("Finished ",sitename," PDF Successfully!", sep = ""))
+
+        #
+        #
+        #
+        #
+        #
+      }
+    }
+    #ALL Special Case
+    if (site == "all"){
+      ALL <- c(0:18,20,21,24:26,30:38,40:47,60,61,70:85,87:89,91:96,99)
+      for (i in ALL){
+        Tempo2("Frame",site = i)
+      }
+    }
+    #invalid entry
+    if (length(siteList) == 0 && site != "all"){
+      print("You have entered an invalid site name. Type ?Tempo2 or check documentation for usage.")
+    }
+  }
+  #Invalid Type
+  if (typeof(site) != "integer" && typeof(site) != "double" && typeof(site) != "character" && exists("Frame")){
+    print("You have entered an invalid site name. Type ?Tempo2 or check documentation for usage.")
   }
 }
