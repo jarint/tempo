@@ -822,4 +822,10 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
       #
     }
   }
+  if (site == "All" && exists("Frame")){
+    All <- c(0:18,20,21,24:26,30:38,40:47,60,61,70:85,87:89,91:96,99)
+    for (i in All){
+      Tempo2(Frame, site = i)
+    }
+  }
 }
