@@ -881,7 +881,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
         n = paste("(n = ",as.character(length(master$ptid)),")", sep = "")
         nControl = paste("(n = ",as.character(length(master$ptid)-sum(master$treatment)),")", sep = "")
         nTNK = paste("(n = ",as.character(sum(master$treatment)),")", sep = "")
-        pdftitle = paste("Site",sitename, sep = "")
+        pdftitle = paste(sitename, sep = "")
         pdfdate = Sys.Date()
         pdf(paste(pdftitle, pdfdate, ".pdf"), paper = "letter", pagecentre = T)
 
@@ -893,7 +893,8 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
 
         #########################################################
         #subjects recruited by month - boxplot
-        Table$rdm_date <- as.Date(DateTable$rdm_date, format="%Y/%m/%d")
+        DateTable = master
+        DateTable$rdm_date <- as.Date(DateTable$rdm_date, format="%Y/%m/%d")
         tab <- table(cut(DateTable$rdm_date, 'month'))
         DatesByMonth <- data.frame(Date=format(as.Date(names(tab)), '%m/%Y'),
                                    Frequency=as.vector(tab))
@@ -1266,7 +1267,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
     if (site == "all"){
       ALL <- c(0:18,20,21,24:26,30:38,40:47,60,61,70:85,87:89,91:96,99)
       for (i in ALL){
-        Tempo2("Frame",site = i)
+        Tempo2(Frame,site = i)
       }
     }
     #invalid entry
