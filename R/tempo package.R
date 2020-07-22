@@ -824,6 +824,7 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
   }
   if (typeof(site) == "character" && exists("Frame")){
     Table1 <- Frame
+    site <- gsub("[[:punct:]]", "", site)
     site <- trimws(site, which = "both")
     site <- tolower(site)
     site <- gsub(" ","",site)
@@ -834,9 +835,9 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
     US = c(35,38,43,70,74)
 
     #Lists of Possible names
-    ukNames = list("uk","unitedkingdom","theuk","theunitedkingdom")
-    canNames = list("can","canada","ca")
-    usNames = list("us","usa","unitedstates","unitedstatesofamerica","theunitedstates","theunitedstatesofamerica","theus","theusa")
+    ukNames = list("uk","unitedkingdom","theuk","theunitedkingdom","bojosplayground")
+    canNames = list("can","canada","ca","eh")
+    usNames = list("us","usa","unitedstates","unitedstatesofamerica","theunitedstates","theunitedstatesofamerica","theus","theusa","trumpland")
 
     #site list/name logic
     siteList = vector()
@@ -1272,11 +1273,11 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
     }
     #invalid entry
     if (length(siteList) == 0 && site != "all"){
-      print("You have entered an invalid site name. Type ?Tempo2 or check documentation for usage.")
+      print("You have entered an invalid site name. Type '?Tempo2' in the console or check the documentation for usage instructions.")
     }
   }
   #Invalid Type
   if (typeof(site) != "integer" && typeof(site) != "double" && typeof(site) != "character" && exists("Frame")){
-    print("You have entered an invalid site name. Type ?Tempo2 or check documentation for usage.")
+    print("You have entered an invalid site name. Type '?Tempo2' in the console or check the documentation for usage instructions.")
   }
 }
