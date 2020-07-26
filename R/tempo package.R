@@ -830,14 +830,23 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
     site <- gsub(" ","",site)
 
     #site vectors by country
-    UK = c(9,20,33,34)
-    CAN = c(1,2,3,6)
-    US = c(35,38,43,70,74)
+    UK = c(70,71,72,73,74,74,75,76,77,78,79,80,81,82,83,84,85,87,88,89)
+    CAN = c(1,2,3,4,5,6,7,8,9,10,11,13,15,16,17,18,20,21,24,25,26,42,47,60,61,91,92,93,94,95,96,99)
+    SPAIN = c(43,44,45,46)
+    IRELAND = c(40,41)
+    AUSTRIA = c(12,14)
+    AUSTRALIA = c(30,31,32,33,34,35,36,37,38)
 
     #Lists of Possible names
     ukNames = list("uk","unitedkingdom","theuk","theunitedkingdom","bojosplayground")
     canNames = list("can","canada","ca","eh")
-    usNames = list("us","usa","unitedstates","unitedstatesofamerica","theunitedstates","theunitedstatesofamerica","theus","theusa","trumpland")
+    spNames = list("spain","sp","spa","spn","esp","es","espana","espagna","kingdomofspain")
+    irelandNames = list("ire","ireland","irelnd","irlnd","ir","eire","irl")
+    austriaNames = list("austria","aut","at")
+    australiaNames = list("australia","aus","aussi","au","crickey","gdaymate")
+    #usNames = list("us","usa","unitedstates","unitedstatesofamerica","theunitedstates","theunitedstatesofamerica","theus","theusa","trumpland")
+
+
 
     #site list/name logic
     siteList = vector()
@@ -851,12 +860,24 @@ Tempo2 <- function(Frame, site = 0, output = outPath){
       siteList = CAN
       nation = "Canada"
     }
-    if (any(usNames == site)){
-      siteList = US
-      nation = "United States"
+    if (any(spNames == site)){
+      siteList = SPAIN
+      nation = "Spain"
+    }
+    if (any(irelandNames == site)){
+      siteList = IRELAND
+      nation = "Ireland"
+    }
+    if (any(austriaNames == site)){
+      siteList = AUSTRIA
+      nation = "Austria"
+    }
+    if (any(australiaNames == site)){
+      siteList = AUSTRALIA
+      nation = "Australia"
     }
 
-    #if country name
+    #if country name exists:
     if (length(siteList) > 0){
       master<-Table1[FALSE, ]
       for (i in siteList){
