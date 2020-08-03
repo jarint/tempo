@@ -138,10 +138,10 @@ assemble <- function(){
   Frame <<-(as.data.frame(tableForUse))
 }
 
-Tempo2 <- function(Frame = Frame, site = 0, output = outPath){
-  if (site == 0 && exists("Frame")){
+Tempo2 <- function(frame = Frame, site = 0, output = outPath){
+  if (site == 0 && exists("frame")){
     setwd(output)
-    Table1 <- Frame
+    Table1 <- frame
     n = paste("(n = ",as.character(length(Table1$ptid)),")", sep = "")
     nControl = paste("(n = ",as.character(length(Table1$ptid)-sum(Table1$treatment)),")", sep = "")
     nTNK = paste("(n = ",as.character(sum(Table1$treatment)),")", sep = "")
@@ -486,8 +486,8 @@ Tempo2 <- function(Frame = Frame, site = 0, output = outPath){
     #
 
   }
-  if (site != 0 && (typeof(site) == "double" || typeof(site) == "integer") && exists("Frame")){
-    Table1 <- Frame
+  if (site != 0 && (typeof(site) == "double" || typeof(site) == "integer") && exists("frame")){
+    Table1 <- frame
     lower = (site*1000)
     upper = ((site*1000)+999)
     master<-Table1[FALSE, ]
@@ -891,8 +891,8 @@ Tempo2 <- function(Frame = Frame, site = 0, output = outPath){
       #
     }
   }
-  if (typeof(site) == "character" && exists("Frame")){
-    Table1 <- Frame
+  if (typeof(site) == "character" && exists("frame")){
+    Table1 <- frame
     site <- gsub("[[:punct:]]", "", site)
     site <- trimws(site, which = "both")
     site <- tolower(site)
@@ -1358,7 +1358,7 @@ Tempo2 <- function(Frame = Frame, site = 0, output = outPath){
     if (site == "all"){
       ALL <- c(0:18,20,21,24:26,30:38,40:47,60,61,70:85,87:89,91:96,99)
       for (i in ALL){
-        Tempo2(Frame,site = i)
+        Tempo2(frame,site = i)
       }
     }
     #invalid entry
@@ -1367,7 +1367,7 @@ Tempo2 <- function(Frame = Frame, site = 0, output = outPath){
     }
   }
   #Invalid Type
-  if (typeof(site) != "integer" && typeof(site) != "double" && typeof(site) != "character" && exists("Frame")){
+  if (typeof(site) != "integer" && typeof(site) != "double" && typeof(site) != "character" && exists("frame")){
     print("You have entered an invalid site name. Type '?Tempo2' in the console or check the documentation for usage instructions.")
   }
 }
