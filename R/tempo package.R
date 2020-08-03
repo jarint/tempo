@@ -69,7 +69,76 @@ newFrame <- function(){
   ######################################################################################
 }
 
-Tempo2 <- function(Frame, site = 0, output = outPath){
+assemble <- function(){
+  if(require("rstudioapi")){
+    print("rstudioapi is loaded correctly")
+  } else {
+    print("Trying to Install rstudioapi")
+    install.packages("rstudioapi")
+    if(require("rstudioapi")){
+      print("rstudioapi installed and loaded")
+    } else {
+      stop("Could not install rstudioapi")
+    }
+  }
+  ######################################################################################
+  #randomization
+  fileSelector = rstudioapi::showQuestion(title = "Enter Randomization CSV", message = "Please select your randomization CSV file (Plate 1).",
+                                          ok = NULL, cancel = NULL)
+  if (fileSelector == TRUE){
+    rdm <- rstudioapi::selectFile("Select your Randomization.CSV file")
+    outPath <<- dirname(rdm)
+    rdm <- read.csv(rdm, header = T)
+  } else {
+    rstudioapi::showDialog(title = "Warning!", message = "You must choose a randomization file (plate 1 in DFExplore). Please run the assemble() function again.")
+    break;
+  }
+  ######################################################################################
+  #imaging form
+  fileSelector = rstudioapi::showQuestion(title = "Enter Imaging Form CSV", message = "Please select your Imaging Form CSV file (Plate 16).",
+                                          ok = NULL, cancel = NULL)
+  if (fileSelector == TRUE){
+    imgf <- rstudioapi::selectFile("Select your Imaging Form .CSV file")
+    imgf <- read.csv(imgf, header = T)
+  } else {
+    rstudioapi::showDialog(title = "Warning!", message = "You must choose an imaging file (plate 16 in DFExplore). Please run the assemble() function again.")
+    break;
+  }
+  ######################################################################################
+  #Baseline CT Form
+  fileSelector = rstudioapi::showQuestion(title = "Enter Baseline CT/CTA Site Assessment CSV", message = "Please select your Baseline CT/CTA Site Assessment CSV File (Plate 12).",
+                                          ok = NULL, cancel = NULL)
+  if (fileSelector == TRUE){
+    blct <- rstudioapi::selectFile("Select your Baseline CT/CTA .CSV file")
+    blct <- read.csv(blct, header = T)
+  } else {
+    rstudioapi::showDialog(title = "Warning!", message = "You must choose a Baseline CT/CTA Site Assesment form (plate 12 in DFExplore). Please run the assemble() function again.")
+    break;
+  }
+  ######################################################################################
+  #Treatment Assignment Form
+  fileSelector = rstudioapi::showQuestion(title = "Enter Treatment Assignment CSV", message = "Please select a Treatment Assignment CSV File (Plate 13).",
+                                          ok = NULL, cancel = NULL)
+  if (fileSelector == TRUE){
+    ta <- rstudioapi::selectFile("Select your Treatment Assignment .CSV file")
+    ta <- read.csv(ta, header = T)
+  } else {
+    rstudioapi::showDialog(title = "Warning!", message = "You must choose a Treatment Assignment file (plate 13 in DFExplore). Please run the assemble() function again.")
+    break;
+  }
+  ######################################################################################
+  #Merge table together
+  RandDem <- merge(rdm, imgf, all.x = T, by="ptid")
+  ImgBLCT <- merge(imgf,blct, all.x = T, by = "ptid")
+  merge1 <- merge(RandDem,ImgBLCT,all.x=T,by="ptid")
+  tableForUse <- merge(merge1,ta,all.x=T,by="ptid")
+  ######################################################################################
+  #Return to Caller
+  rstudioapi::showDialog(title = "Success", message = "Finished Successfully.")
+  Frame <<-(as.data.frame(tableForUse))
+}
+
+Tempo2 <- function(Frame = Frame, site = 0, output = outPath){
   if (site == 0 && exists("Frame")){
     setwd(output)
     Table1 <- Frame
