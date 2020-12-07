@@ -870,7 +870,7 @@ Tempo2 <- function(frame = Frame, site = 0, output = outPath){
       bb = data.frame(group = paste("\n","Randomization to TNK","\n",nTNK), value = timeRDMtoTNK)
       aabb = rbind(aa,bb)
       boxplot(aabb$value~aabb$group, na.rm = T, main = paste("Time from Randomization to TNK/Control - Site",sitename),
-              ylab = "Time (Minutes)", ylim = range(pretty(c(0,max(timeRDMtoTNK, na.rm = T)))), staplewex = 1, las = 1,
+              ylab = "Time (Minutes)", ylim = range(pretty(c(0,max(timeRDMtoCTRL, na.rm = T)))), staplewex = 1, las = 1,
               xlab = NULL, par(mgp = c(3,1.5,0)))
       text(y=fivenum(timeRDMtoCTRL), labels = fivenum(timeRDMtoCTRL), x=1.5)
       text(y=fivenum(timeRDMtoTNK), labels = fivenum(timeRDMtoTNK), x= 2.5)
