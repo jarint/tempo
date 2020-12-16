@@ -142,6 +142,20 @@ Tempo2 <- function(frame = Frame, site = 0, output = outPath){
   if (site == 0 && exists("frame")){
     setwd(output)
     Table1 <- frame
+    siteList <- c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,20,21,24,25,26,30,31,32,33,34,35,36,37,38,40,41,42,43,44,45,46,47,60,61,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,87,88,89,91,92,93,94,95,96)
+    master<-Table1[FALSE, ]
+    for (i in siteList){
+      upper = (i*1000)+999
+      lower = i*1000
+      for (row in 1:nrow(Table1)){
+        for (j in lower:upper){
+          if (Table1$ptid[row] == j){
+            master <- rbind(master,Table1[row, ])
+          }
+        }
+      }
+    }
+    Table1 <- master
     n = paste("(n = ",as.character(length(Table1$ptid)),")", sep = "")
     nControl = paste("(n = ",as.character(length(Table1$ptid)-sum(Table1$treatment)),")", sep = "")
     nTNK = paste("(n = ",as.character(sum(Table1$treatment)),")", sep = "")
@@ -899,8 +913,8 @@ Tempo2 <- function(frame = Frame, site = 0, output = outPath){
     site <- gsub(" ","",site)
 
     #site vectors by country
-    UK = c(70,71,72,73,74,74,75,76,77,78,79,80,81,82,83,84,85,87,88,89)
-    CAN = c(1,2,3,4,5,6,7,8,9,10,11,13,15,16,17,18,20,21,24,25,26,42,47,60,61,91,92,93,94,95,96,99)
+    UK = c(70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,87,88,89)
+    CAN = c(1,2,3,4,5,6,7,8,9,10,11,13,15,16,17,18,20,21,24,25,26,42,47,60,61,91,92,93,94,95,96)
     SPAIN = c(43,44,45,46)
     IRELAND = c(40,41)
     AUSTRIA = c(12,14)
