@@ -55,6 +55,18 @@ newFrame <- function(){
     break;
   }
   ######################################################################################
+  #AOL Score Form
+  fileSelector = tk_messageBox(type = "okcancel", message = "Please select an AOL Score CSV File (Plate 4 Tempo Imaging).",
+                               caption = "Enter AOL Score CSV")
+  if (fileSelector == "ok"){
+    p4 <- file.choose()
+    p4 <- read.csv(p4, header = T)
+  } else {
+    tk_messageBox(type = 'ok', message = "You must choose an AOL Score file (plate 4 in Tempo Imagiing Database).",
+                  icon = "warning", caption = "Error")
+    break;
+  }
+  ######################################################################################
   #Merge table together
   RandDem <- merge(rdm, imgf, all.x = T, by="ptid")
   ImgBLCT <- merge(imgf,blct, all.x = T, by = "ptid")
@@ -124,6 +136,17 @@ assemble <- function(){
     ta <- read.csv(ta, header = T)
   } else {
     rstudioapi::showDialog(title = "Warning!", message = "You must choose a Treatment Assignment file (plate 13 in DFExplore). Please run the assemble() function again.")
+    break;
+  }
+  ######################################################################################
+  #AOL Score Form
+  fileSelector = rstudioapi::showQuestion(title = "Enter AOL Score CSV", message = "Please select an AOL Score CSV File (Plate 4 Tempo Imaging).",
+                                          ok = NULL, cancel = NULL)
+  if (fileSelector == TRUE){
+    p4 <- rstudioapi::selectFile("Select your AOL Score .CSV file")
+    p4 <- read.csv(p4, header = T)
+  } else {
+    rstudioapi::showDialog(title = "Warning!", message = "You must choose an AOL Score file (plate 4 in TEMPO Imaging database). Please run the assemble() function again.")
     break;
   }
   ######################################################################################
@@ -484,6 +507,85 @@ Tempo2 <- function(frame = Frame, site = 0, output = outPath){
     text(y=fivenum(timeRDMtoCTRL), labels = fivenum(timeRDMtoCTRL), x=1.5)
     text(y=fivenum(timeRDMtoTNK), labels = fivenum(timeRDMtoTNK), x= 2.5)
 
+    ##########################################################
+    # AOL SCORE FIGURES - All Sites
+    nr <- nrow(Frame)
+    aol <- (data.frame(matrix(ncol = 4, nrow = nr)))
+    colnames(aol) = c("PTID", "SUBJID", "TREAT", "AOL")
+    aol$PTID = Frame$ptid
+    aol$TREAT = Frame$treatment
+    for (row in 1:nrow(aol)) {
+      for (r in 1:nrow(p4)){
+        if (aol$PTID[row] == p4$usubjid[r]){
+          aol$SUBJID[row] <- p4$usubjid[r]
+          aol$AOL[row] <- p4$fastresc_aolscore[r]
+        }
+      }
+    }
+    CTRL0 = 0
+    CTRL1 = 0
+    CTRL2A = 0
+    CTRL2B = 0
+    CTRL3 = 0
+
+    TNK0 = 0
+    TNK1 = 0
+    TNK2A = 0
+    TNK2B = 0
+    TNK3 = 0
+    for (row in 1:nrow(aol)){
+      if (!is.na(aol$SUBJID[row]) && !is.na(aol$AOL[row]) && aol$TREAT[row] == 0){
+        if (aol$AOL[row] == 0){
+          CTRL0 = CTRL0 + 1
+        }
+        if (aol$AOL[row] == 1){
+          CTRL1 = CTRL1 + 1
+        }
+        if (aol$AOL[row] == 2){
+          CTRL2A = CTRL2A + 1
+        }
+        if (aol$AOL[row] == 3){
+          CTRL2B = CTRL2B + 1
+        }
+        if (aol$AOL[row] == 4){
+          CTRL3 = CTRL3 + 1
+        }
+      }
+      if (!is.na(aol$SUBJID[row]) && !is.na(aol$AOL[row]) && aol$TREAT[row] == 1){
+        if (aol$AOL[row] == 0){
+          TNK0 = TNK0 + 1
+        }
+        if (aol$AOL[row] == 1){
+          TNK1 = TNK1 + 1
+        }
+        if (aol$AOL[row] == 2){
+          TNK2A = TNK2A + 1
+        }
+        if (aol$AOL[row] == 3){
+          TNK2B = TNK2B + 1
+        }
+        if (aol$AOL[row] == 4){
+          TNK3 = TNK3 + 1
+        }
+      }
+    }
+    CTRLTOT = CTRL0 + CTRL1 + CTRL2A + CTRL2B + CTRL3
+    TNKTOT = TNK0 + TNK1 + TNK2A + TNK2B + TNK3
+
+    ctrlVals = c(CTRL0, CTRL1, CTRL2A, CTRL2B, CTRL3)
+    tnkVals = c(TNK0, TNK1, TNK2A, TNK2B, TNK3)
+
+    ctrldf = as.data.frame(ctrlVals)
+    rownames(ctrldf) <- c("0", "1", "2A", "2B", "3")
+    ctrldf <- t(ctrldf)
+    barplot(ctrldf, main = paste("AOL Scores - Control Group", "\n n =", CTRLTOT), xlab = "AOL SCORE", axis.lty = 1,
+            ylab = "NUMBER OF CASES", las = 1, cex.names = 0.8, ylim = range(pretty(c(0, max(ctrldf, na.rm = T)))))
+
+    tnkdf = as.data.frame(tnkVals)
+    rownames(tnkdf) <- c("0", "1", "2A", "2B", "3")
+    tnkdf <- t(tnkdf)
+    barplot(tnkdf, main = paste("AOL Scores - TNK Group", "\n n =", TNKTOT), xlab = "AOL SCORE", axis.lty = 1,
+            ylab = "NUMBER OF CASES", las = 1, cex.names = 0.8, ylim = range(pretty(c(0, max(tnkdf, na.rm = T)))))
     #
     #
     #
@@ -888,6 +990,86 @@ Tempo2 <- function(frame = Frame, site = 0, output = outPath){
               xlab = NULL, par(mgp = c(3,1.5,0)))
       text(y=fivenum(timeRDMtoCTRL), labels = fivenum(timeRDMtoCTRL), x=1.5)
       text(y=fivenum(timeRDMtoTNK), labels = fivenum(timeRDMtoTNK), x= 2.5)
+
+      #################################################################
+      #AOL SCORE FIGURES - PER SITE
+      nr <- nrow(master)
+      aol <- (data.frame(matrix(ncol = 4, nrow = nr)))
+      colnames(aol) = c("PTID", "SUBJID", "TREAT", "AOL")
+      aol$PTID = master$ptid
+      aol$TREAT = master$treatment
+      for (row in 1:nrow(aol)) {
+        for (r in 1:nrow(p4)){
+          if (aol$PTID[row] == p4$usubjid[r]){
+            aol$SUBJID[row] <- p4$usubjid[r]
+            aol$AOL[row] <- p4$fastresc_aolscore[r]
+          }
+        }
+      }
+      CTRL0 = 0
+      CTRL1 = 0
+      CTRL2A = 0
+      CTRL2B = 0
+      CTRL3 = 0
+
+      TNK0 = 0
+      TNK1 = 0
+      TNK2A = 0
+      TNK2B = 0
+      TNK3 = 0
+      for (row in 1:nrow(aol)){
+        if (!is.na(aol$SUBJID[row]) && !is.na(aol$AOL[row]) && aol$TREAT[row] == 0){
+          if (aol$AOL[row] == 0){
+            CTRL0 = CTRL0 + 1
+          }
+          if (aol$AOL[row] == 1){
+            CTRL1 = CTRL1 + 1
+          }
+          if (aol$AOL[row] == 2){
+            CTRL2A = CTRL2A + 1
+          }
+          if (aol$AOL[row] == 3){
+            CTRL2B = CTRL2B + 1
+          }
+          if (aol$AOL[row] == 4){
+            CTRL3 = CTRL3 + 1
+          }
+        }
+        if (!is.na(aol$SUBJID[row]) && !is.na(aol$AOL[row]) && aol$TREAT[row] == 1){
+          if (aol$AOL[row] == 0){
+            TNK0 = TNK0 + 1
+          }
+          if (aol$AOL[row] == 1){
+            TNK1 = TNK1 + 1
+          }
+          if (aol$AOL[row] == 2){
+            TNK2A = TNK2A + 1
+          }
+          if (aol$AOL[row] == 3){
+            TNK2B = TNK2B + 1
+          }
+          if (aol$AOL[row] == 4){
+            TNK3 = TNK3 + 1
+          }
+        }
+      }
+      CTRLTOT = CTRL0 + CTRL1 + CTRL2A + CTRL2B + CTRL3
+      TNKTOT = TNK0 + TNK1 + TNK2A + TNK2B + TNK3
+
+      ctrlVals = c(CTRL0, CTRL1, CTRL2A, CTRL2B, CTRL3)
+      tnkVals = c(TNK0, TNK1, TNK2A, TNK2B, TNK3)
+
+      ctrldf = as.data.frame(ctrlVals)
+      rownames(ctrldf) <- c("0", "1", "2A", "2B", "3")
+      ctrldf <- t(ctrldf)
+      barplot(ctrldf, main = paste("AOL Scores - Control Group (Site", sitename,")", "\n n =", CTRLTOT), xlab = "AOL SCORE", axis.lty = 1,
+              ylab = "NUMBER OF CASES", las = 1, cex.names = 0.8, ylim = range(pretty(c(0, max(ctrldf, na.rm = T)))))
+
+      tnkdf = as.data.frame(tnkVals)
+      rownames(tnkdf) <- c("0", "1", "2A", "2B", "3")
+      tnkdf <- t(tnkdf)
+      barplot(tnkdf, main = paste("AOL Scores - TNK Group (Site", sitename,")", "\n n =", TNKTOT), xlab = "AOL SCORE", axis.lty = 1,
+              ylab = "NUMBER OF CASES", las = 1, cex.names = 0.8, ylim = range(pretty(c(0, max(tnkdf, na.rm = T)))))
 
       #
       #
@@ -1351,6 +1533,86 @@ Tempo2 <- function(frame = Frame, site = 0, output = outPath){
                 xlab = NULL, par(mgp = c(3,1.5,0)))
         text(y=fivenum(timeRDMtoCTRL), labels = fivenum(timeRDMtoCTRL), x=1.5)
         text(y=fivenum(timeRDMtoTNK), labels = fivenum(timeRDMtoTNK), x= 2.5)
+
+        #################################################################
+        #AOL SCORE FIGURES - PER SITE
+        nr <- nrow(master)
+        aol <- (data.frame(matrix(ncol = 4, nrow = nr)))
+        colnames(aol) = c("PTID", "SUBJID", "TREAT", "AOL")
+        aol$PTID = master$ptid
+        aol$TREAT = master$treatment
+        for (row in 1:nrow(aol)) {
+          for (r in 1:nrow(p4)){
+            if (aol$PTID[row] == p4$usubjid[r]){
+              aol$SUBJID[row] <- p4$usubjid[r]
+              aol$AOL[row] <- p4$fastresc_aolscore[r]
+            }
+          }
+        }
+        CTRL0 = 0
+        CTRL1 = 0
+        CTRL2A = 0
+        CTRL2B = 0
+        CTRL3 = 0
+
+        TNK0 = 0
+        TNK1 = 0
+        TNK2A = 0
+        TNK2B = 0
+        TNK3 = 0
+        for (row in 1:nrow(aol)){
+          if (!is.na(aol$SUBJID[row]) && !is.na(aol$AOL[row]) && aol$TREAT[row] == 0){
+            if (aol$AOL[row] == 0){
+              CTRL0 = CTRL0 + 1
+            }
+            if (aol$AOL[row] == 1){
+              CTRL1 = CTRL1 + 1
+            }
+            if (aol$AOL[row] == 2){
+              CTRL2A = CTRL2A + 1
+            }
+            if (aol$AOL[row] == 3){
+              CTRL2B = CTRL2B + 1
+            }
+            if (aol$AOL[row] == 4){
+              CTRL3 = CTRL3 + 1
+            }
+          }
+          if (!is.na(aol$SUBJID[row]) && !is.na(aol$AOL[row]) && aol$TREAT[row] == 1){
+            if (aol$AOL[row] == 0){
+              TNK0 = TNK0 + 1
+            }
+            if (aol$AOL[row] == 1){
+              TNK1 = TNK1 + 1
+            }
+            if (aol$AOL[row] == 2){
+              TNK2A = TNK2A + 1
+            }
+            if (aol$AOL[row] == 3){
+              TNK2B = TNK2B + 1
+            }
+            if (aol$AOL[row] == 4){
+              TNK3 = TNK3 + 1
+            }
+          }
+        }
+        CTRLTOT = CTRL0 + CTRL1 + CTRL2A + CTRL2B + CTRL3
+        TNKTOT = TNK0 + TNK1 + TNK2A + TNK2B + TNK3
+
+        ctrlVals = c(CTRL0, CTRL1, CTRL2A, CTRL2B, CTRL3)
+        tnkVals = c(TNK0, TNK1, TNK2A, TNK2B, TNK3)
+
+        ctrldf = as.data.frame(ctrlVals)
+        rownames(ctrldf) <- c("0", "1", "2A", "2B", "3")
+        ctrldf <- t(ctrldf)
+        barplot(ctrldf, main = paste("AOL Scores - Control Group (Site", sitename,")", "\n n =", CTRLTOT), xlab = "AOL SCORE", axis.lty = 1,
+                ylab = "NUMBER OF CASES", las = 1, cex.names = 0.8, ylim = range(pretty(c(0, max(ctrldf, na.rm = T)))))
+
+        tnkdf = as.data.frame(tnkVals)
+        rownames(tnkdf) <- c("0", "1", "2A", "2B", "3")
+        tnkdf <- t(tnkdf)
+        barplot(tnkdf, main = paste("AOL Scores - TNK Group (Site", sitename,")", "\n n =", TNKTOT), xlab = "AOL SCORE", axis.lty = 1,
+                ylab = "NUMBER OF CASES", las = 1, cex.names = 0.8, ylim = range(pretty(c(0, max(tnkdf, na.rm = T)))))
 
         #
         #
