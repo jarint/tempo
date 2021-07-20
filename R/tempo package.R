@@ -155,11 +155,12 @@ assemble <- function(){
   ImgBLCT <- merge(imgf,blct, all.x = T, by = "ptid")
   merge1 <- merge(RandDem,ImgBLCT,all.x=T,by="ptid")
   tableForUse <- merge(merge1,ta,all.x=T,by="ptid")
+  p4 <- as.data.frame(p4)
   ######################################################################################
   #Return to Caller
   rstudioapi::showDialog(title = "Success", message = "Finished Successfully.")
   Frame <<-(as.data.frame(tableForUse))
-  return(as.data.frame(p4))
+  p4 <<-(as.data.frame(p4))
 }
 
 Tempo2 <- function(frame = Frame, site = 0, output = outPath){
