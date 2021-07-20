@@ -145,7 +145,7 @@ assemble <- function(){
   if (fileSelector == TRUE){
     p4 <- rstudioapi::selectFile("Select your AOL Score .CSV file")
     p4 <- read.csv(p4, header = T)
-    p4 <<- as.data.frame(p4)
+    p4 <<-(as.data.frame(p4))
   } else {
     rstudioapi::showDialog(title = "Warning!", message = "You must choose an AOL Score file (plate 4 in TEMPO Imaging database). Please run the assemble() function again.")
     break;
