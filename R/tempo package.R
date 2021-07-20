@@ -159,7 +159,7 @@ assemble <- function(){
   #Return to Caller
   rstudioapi::showDialog(title = "Success", message = "Finished Successfully.")
   Frame <<-(as.data.frame(tableForUse))
-  p4 <<-(as.data.frame(p4))
+  return(as.data.frame(p4))
 }
 
 Tempo2 <- function(frame = Frame, site = 0, output = outPath){
