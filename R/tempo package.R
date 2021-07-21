@@ -76,6 +76,7 @@ newFrame <- function(){
   ######################################################################################
   #Return to Caller
   tk_messageBox(type = 'ok', message = "Finished Successfully.", caption = "Success")
+  p4 <<- as.data.frame(p4)
   return(as.data.frame(tableForUse))
 
   ######################################################################################
